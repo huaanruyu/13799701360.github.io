@@ -1,0 +1,2525 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>环保小鸡成长记 · 进化版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', Roboto, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2b6e3b 0%, #4a9e5c 40%, #1b4a2a 100%);
+            background-size: 200% 200%;
+            animation: bgShift 15s ease infinite;
+            padding: 12px;
+        }
+        @keyframes bgShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .game-container {
+            width: 820px;
+            max-width: 100%;
+            height: 660px;
+            max-height: 96vh;
+            background: linear-gradient(160deg, #eafcd8 0%, #d9f0c5 50%, #c8e8b0 100%);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.55), 0 0 0 8px rgba(255,255,255,0.2), inset 0 2px 20px rgba(255,255,255,0.6);
+            overflow: hidden;
+            position: relative;
+            border: 5px solid #f5ffdc;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #a9d18e, #8ec070);
+            padding: 8px 16px;
+            border-bottom: 4px solid #6b9e4b;
+            color: #1e3a1e;
+            font-weight: bold;
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 5;
+        }
+        .resource {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(145deg, #f5ffdc, #e0f5c8);
+            padding: 4px 9px;
+            border-radius: 40px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 3px 6px rgba(0,0,0,0.15);
+            border: 2px solid #b8dc9e;
+            transition: transform 0.2s;
+            font-size: 12px;
+            cursor: default;
+        }
+        .resource-item.pulse { animation: pulsePop 0.4s ease; }
+        @keyframes pulsePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .top-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .top-icon-btn {
+            background: linear-gradient(145deg, #f5ffdc, #d0e8b8);
+            border: none;
+            border-bottom: 4px solid #8fbb7a;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            transition: all 0.15s;
+        }
+        .top-icon-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+        .top-icon-btn.help {
+            background: linear-gradient(145deg, #b3e0ff, #8ecae6);
+            border-bottom-color: #5a9ec0;
+        }
+        .top-icon-btn.sound {
+            background: linear-gradient(145deg, #ffe5b4, #ffd180);
+            border-bottom-color: #d4a373;
+        }
+        .top-icon-btn.music {
+            background: linear-gradient(145deg, #e0b3ff, #c08ee6);
+            border-bottom-color: #9b5ac0;
+        }
+        .top-icon-btn.reset {
+            background: linear-gradient(145deg, #ffb3b3, #ff8a8a);
+            border-bottom-color: #c96060;
+        }
+        .top-icon-btn.muted { opacity: 0.5; }
+        #dateDisplay {
+            font-weight: 800;
+            color: #2b4d1f;
+            background: rgba(255,255,255,0.5);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .screen {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 18px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            scrollbar-width: thin;
+        }
+        .screen.active {
+            display: flex;
+            animation: screenIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes screenIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .screen::-webkit-scrollbar { width: 6px; }
+        .screen::-webkit-scrollbar-thumb { background: #8fbb7a; border-radius: 10px; }
+
+        .chicken-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(145deg, #c6ecb0, #9fd18b);
+            border-radius: 50px 50px 30px 30px;
+            padding: 16px 14px 12px;
+            box-shadow: inset 0 -8px 0 #7aa05e, 0 10px 20px rgba(0,0,0,0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .chicken-area::before {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, rgba(255,255,255,0.5), transparent 70%);
+            border-radius: 50%;
+        }
+        .chicken-hint {
+            position: absolute;
+            top: 14px;
+            right: 20px;
+            background: #fff8dc;
+            border: 2px solid #f7b731;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #a8752a;
+            animation: hintBounce 1.6s infinite;
+            z-index: 2;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .chicken-hint::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20px;
+            width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #f7b731;
+        }
+        @keyframes hintBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .chicken-avatar {
+            font-size: 84px;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 12px 8px rgba(0,0,0,0.25));
+            animation: chickenIdle 3s ease-in-out infinite;
+        }
+        @keyframes chickenIdle {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(-2deg); }
+        }
+        .chicken-avatar:active { transform: scale(0.88); animation: none; }
+        .chicken-avatar.petted { animation: petJump 0.5s ease; }
+        @keyframes petJump {
+            0% { transform: scale(1) translateY(0); }
+            30% { transform: scale(1.15) translateY(-20px); }
+            60% { transform: scale(0.95) translateY(0); }
+            100% { transform: scale(1) translateY(0); }
+        }
+        .chicken-avatar.evolving { animation: evolveGlow 1.2s ease-in-out; }
+        @keyframes evolveGlow {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0 gold); }
+            30% { transform: scale(1.4) rotate(10deg); filter: drop-shadow(0 0 30px gold) brightness(2); }
+            60% { transform: scale(0.7) rotate(-10deg); filter: drop-shadow(0 0 40px orange) brightness(3); }
+            100% { transform: scale(1) rotate(0); filter: drop-shadow(0 12px 8px rgba(0,0,0,0.25)); }
+        }
+        .chicken-name {
+            font-size: 17px;
+            font-weight: 800;
+            color: #2b4d1f;
+            background: linear-gradient(145deg, #f5ffdc, #e0f5c8);
+            padding: 5px 22px;
+            border-radius: 30px;
+            margin-bottom: 8px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+            position: relative;
+            z-index: 1;
+        }
+        .status-bars {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-label {
+            width: 62px;
+            font-size: 13px;
+            font-weight: 800;
+            color: #1e3a1e;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .bar-bg {
+            flex: 1;
+            height: 18px;
+            background: rgba(120,110,90,0.4);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.5);
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 80%;
+            border-radius: 30px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.5), transparent);
+            border-radius: 30px 30px 0 0;
+        }
+        .fill-hunger { background: linear-gradient(90deg, #f7b731, #ffd966); }
+        .fill-clean { background: linear-gradient(90deg, #4aa3e0, #8ecae6); }
+        .fill-mood { background: linear-gradient(90deg, #f07b9e, #ffa8c0); }
+
+        .egg-stats {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255,255,255,0.55);
+            border-radius: 20px;
+            padding: 6px 10px;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+            gap: 6px;
+        }
+        .egg-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #2b4d1f;
+        }
+        .egg-stat .egg-emoji { font-size: 16px; }
+
+        .egg-progress {
+            width: 100%;
+            margin-top: 6px;
+            position: relative;
+            z-index: 1;
+        }
+        .egg-progress-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #2b4d1f;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .egg-progress-bar {
+            height: 12px;
+            background: rgba(120,110,90,0.4);
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .egg-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ffd966, #ffb347);
+            border-radius: 30px;
+            transition: width 0.5s;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .btn {
+            background: linear-gradient(145deg, #f5ffdc, #d0e8b8);
+            border: none;
+            border-bottom: 5px solid #8fbb7a;
+            padding: 12px 6px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 14px;
+            color: #2b4d1f;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:active {
+            border-bottom-width: 2px;
+            transform: translateY(4px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-secondary {
+            background: linear-gradient(145deg, #ffe5b4, #ffd180);
+            border-bottom-color: #d4a373;
+            color: #5c3e1f;
+        }
+
+        .nav-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+        .back-btn {
+            background: linear-gradient(145deg, #a9d18e, #8ec070);
+            border: none;
+            font-size: 22px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1e3a1e;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #5b8c4a, 0 6px 10px rgba(0,0,0,0.15);
+            transition: all 0.15s;
+        }
+        .back-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #5b8c4a, 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .screen-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #1e3a1e;
+            text-shadow: 0 2px 0 #c6ecb0, 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .card {
+            background: linear-gradient(145deg, #f8ffe8, #e0f5c8);
+            border-radius: 28px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 0 #9fbb8a, 0 8px 16px rgba(0,0,0,0.12);
+            border: 2px solid rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #9fbb8a, 0 12px 20px rgba(0,0,0,0.15);
+        }
+        .card:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #9fbb8a, 0 5px 10px rgba(0,0,0,0.1);
+        }
+        .card-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .card-icon {
+            font-size: 40px;
+            filter: drop-shadow(2px 4px 3px rgba(0,0,0,0.2));
+            transition: transform 0.3s;
+        }
+        .card:hover .card-icon { transform: scale(1.1) rotate(-5deg); }
+        .card-info h4 {
+            font-size: 17px;
+            color: #1e3a1e;
+            margin-bottom: 3px;
+            font-weight: 800;
+        }
+        .card-info p {
+            font-size: 12px;
+            color: #4c6b3e;
+            font-weight: 500;
+        }
+        .card-right {
+            background: linear-gradient(145deg, #c6ecb0, #a9d18e);
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-weight: 800;
+            color: #204d1a;
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .price-tag {
+            background: linear-gradient(145deg, #ffd966, #ffc233);
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #4a2e0a;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.6);
+        }
+        .egg-price {
+            background: linear-gradient(145deg, #fef7e0, #ffe0b2);
+            color: #6b4f1a;
+        }
+
+        .game-score {
+            font-size: 20px;
+            font-weight: 900;
+            color: #1e3a1e;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+        }
+        .game-timer {
+            font-size: 17px;
+            font-weight: 800;
+            color: #c0392b;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .game-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .game-btn {
+            background: linear-gradient(145deg, #ffe5b4, #ffd180);
+            border: none;
+            border-bottom: 4px solid #d4a373;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            color: #5c3e1f;
+            transition: all 0.15s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        .game-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+        .game-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .game-btn.help {
+            background: linear-gradient(145deg, #b3e0ff, #8ecae6);
+            border-bottom-color: #5a9ec0;
+            color: #1e3a1e;
+        }
+
+        .trash-row {
+            display: flex;
+            gap: 18px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .trash-bin {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(145deg, #e0c9a6, #c9b088);
+            border-radius: 14px 14px 26px 26px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 12px;
+            color: #3d2b1a;
+            border: 3px solid #7c5e3a;
+            box-shadow: 0 6px 0 #5e452a, 0 8px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .trash-bin:hover { transform: translateY(-3px); }
+        .trash-bin.selected {
+            background: linear-gradient(145deg, #ffe68f, #ffd54f);
+            border-color: #b38b4a;
+            transform: scale(1.08) translateY(-3px);
+            box-shadow: 0 8px 0 #9a7340, 0 12px 18px rgba(0,0,0,0.2);
+        }
+        #trashItemArea {
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 54px;
+            transition: transform 0.3s;
+        }
+        .trash-item-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2b4d1f;
+            margin-top: 4px;
+            background: rgba(255,255,255,0.6);
+            padding: 2px 16px;
+            border-radius: 20px;
+        }
+
+        .ocean-area {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(180deg, #b3e0ff 0%, #8ecae6 50%, #5a9ec0 100%);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: inset 0 -8px 0 #3d7a96, inset 0 8px 20px rgba(255,255,255,0.3);
+        }
+        .ocean-item {
+            position: absolute;
+            font-size: 36px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            background: rgba(255,255,255,0.55);
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 rgba(90,158,192,0.6), 0 6px 12px rgba(0,0,0,0.1);
+            backdrop-filter: blur(2px);
+        }
+        .ocean-item:active { transform: scale(0.9); }
+        .ocean-item.pop { animation: itemPop 0.3s ease; }
+        @keyframes itemPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .ocean-level-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e3a1e;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 16px;
+            margin-bottom: 6px;
+        }
+
+        .faucet-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 520px;
+            margin: 10px auto;
+            padding: 14px;
+            background: linear-gradient(145deg, #c6ecb0, #a9d18e);
+            border-radius: 24px;
+            box-shadow: inset 0 -6px 0 #7aa05e, 0 6px 12px rgba(0,0,0,0.12);
+        }
+        .faucet-hole {
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(145deg, #a8dbef, #8ecae6);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            cursor: pointer;
+            box-shadow: inset 0 -4px 0 #5a9ec0, 0 3px 6px rgba(0,0,0,0.1);
+            transition: transform 0.1s, background 0.2s;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .faucet-hole:hover { transform: scale(1.05); }
+        .faucet-hole.active-leak {
+            background: linear-gradient(145deg, #ffb3b3, #ff8a8a);
+            animation: shake 0.35s infinite;
+            box-shadow: inset 0 -4px 0 #c96060, 0 0 20px rgba(255,100,100,0.6);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+        }
+        .faucet-hole.closed {
+            background: linear-gradient(145deg, #a9d18e, #8ec070);
+            cursor: default;
+            animation: closePop 0.4s ease;
+        }
+        @keyframes closePop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .faucet-hole:active { transform: scale(0.94); }
+
+        .knowledge-popup {
+            background: linear-gradient(145deg, #fff8dc, #fef7e0);
+            border-left: 10px solid #6b9e4b;
+            border-radius: 20px;
+            padding: 16px;
+            font-weight: 600;
+            color: #1e3a1e;
+            box-shadow: 0 8px 0 #8fbb7a, 0 10px 18px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255,255,255,0.7);
+            transition: transform 0.2s;
+            font-size: 13px;
+        }
+        .knowledge-popup:hover { transform: translateY(-3px); }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(20, 40, 20, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            border-radius: 40px;
+            padding: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-card {
+            background: linear-gradient(160deg, #f8ffe8, #e0f5c8);
+            border-radius: 32px;
+            padding: 24px 22px;
+            width: 100%;
+            max-width: 430px;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 18px 0 #6b9e4b, 0 25px 50px rgba(0,0,0,0.5);
+            border: 3px solid rgba(255,255,255,0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.7) rotate(-5deg); opacity: 0; }
+            to { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .modal-emoji {
+            font-size: 60px;
+            line-height: 1;
+            filter: drop-shadow(0 8px 6px rgba(0,0,0,0.25));
+            animation: emojiFloat 2s ease-in-out infinite;
+        }
+        @keyframes emojiFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .modal-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #1e3a1e;
+            text-align: center;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .modal-score {
+            font-size: 16px;
+            font-weight: 800;
+            color: #204d1a;
+            background: linear-gradient(145deg, #c6ecb0, #a9d18e);
+            padding: 8px 20px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
+            border: 2px solid rgba(255,255,255,0.7);
+        }
+        .modal-knowledge {
+            background: linear-gradient(145deg, #fff8dc, #ffefc2);
+            border-left: 6px solid #f7b731;
+            border-radius: 16px;
+            padding: 12px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5c3e1f;
+            line-height: 1.6;
+            width: 100%;
+            text-align: left;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+        }
+        .modal-knowledge .k-label {
+            display: block;
+            font-size: 11px;
+            color: #a8752a;
+            margin-bottom: 4px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .modal-tutorial {
+            background: linear-gradient(145deg, #e8f7da, #d9f0c5);
+            border-radius: 16px;
+            padding: 14px 16px;
+            width: 100%;
+            font-size: 13px;
+            color: #1e3a1e;
+            line-height: 1.75;
+            border: 2px dashed #8fbb7a;
+            text-align: left;
+        }
+        .modal-tutorial ul { margin-left: 20px; margin-top: 6px; }
+        .modal-tutorial li { margin-bottom: 4px; }
+        .modal-tutorial strong { color: #2b4d1f; }
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-top: 6px;
+        }
+        .modal-btn {
+            flex: 1;
+            background: linear-gradient(145deg, #f5ffdc, #d0e8b8);
+            border: none;
+            border-bottom: 5px solid #8fbb7a;
+            padding: 12px 8px;
+            border-radius: 26px;
+            font-weight: 800;
+            font-size: 14px;
+            color: #2b4d1f;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+        .modal-btn:active {
+            border-bottom-width: 2px;
+            transform: translateY(3px);
+        }
+        .modal-btn.primary {
+            background: linear-gradient(145deg, #ffe5b4, #ffd180);
+            border-bottom-color: #d4a373;
+            color: #5c3e1f;
+        }
+
+        .evolve-modal .modal-card {
+            background: linear-gradient(160deg, #fff8dc, #ffefc2, #ffe0b2);
+            box-shadow: 0 18px 0 #f7b731, 0 25px 60px rgba(247,183,49,0.6);
+        }
+        .evolve-stage {
+            font-size: 90px;
+            line-height: 1;
+            transition: all 0.4s;
+            filter: drop-shadow(0 0 30px gold);
+            animation: evolveStageAnim 1.5s ease-in-out infinite;
+        }
+        @keyframes evolveStageAnim {
+            0%, 100% { transform: scale(1) rotate(0); }
+            25% { transform: scale(1.15) rotate(5deg); }
+            75% { transform: scale(1.15) rotate(-5deg); }
+        }
+        .evolve-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #d35400;
+            text-shadow: 0 2px 0 #fff, 0 0 20px gold;
+            animation: titleGlow 1s ease-in-out infinite alternate;
+        }
+        @keyframes titleGlow {
+            from { text-shadow: 0 2px 0 #fff, 0 0 10px gold; }
+            to { text-shadow: 0 2px 0 #fff, 0 0 30px orange; }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            animation: particleFloat 1.2s ease-out forwards;
+            z-index: 1000;
+        }
+        @keyframes particleFloat {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0.3); opacity: 0; }
+        }
+
+        .flex-col { display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="top-bar">
+        <div class="resource">
+            <div class="resource-item" id="coinResource"><span>⭐</span> <span id="coinCount">120</span></div>
+            <div class="resource-item" id="eggResource"><span>🥚</span> <span id="eggCount">0</span></div>
+            <div class="resource-item" id="eagleEggResource"><span>🦅</span> <span id="eagleEggCount">0</span></div>
+            <div class="resource-item" id="phoenixEggResource"><span>🔥</span> <span id="phoenixEggCount">0</span></div>
+        </div>
+        <div class="top-buttons">
+            <div id="dateDisplay">📅 第1天</div>
+            <button class="top-icon-btn music" id="btnMusic" title="切换音乐">🎵</button>
+            <button class="top-icon-btn sound" id="btnSound" title="音效开关">🔊</button>
+            <button class="top-icon-btn help" id="btnGlobalHelp" title="游戏总规则">❓</button>
+            <button class="top-icon-btn reset" id="btnReset" title="新建存档（清空当前进度）">🔄</button>
+        </div>
+    </div>
+
+    <div id="screenHome" class="screen active">
+        <div class="chicken-area">
+            <div class="chicken-hint" id="chickenHint">👆 点击小鸡摸摸它！</div>
+            <div class="chicken-avatar" id="chickenEmoji">🐣</div>
+            <div class="chicken-name" id="chickenStage">雏鸡 · 啾啾</div>
+            <div class="status-bars">
+                <div class="status-item">
+                    <span class="status-label">🍗饥饿</span>
+                    <div class="bar-bg"><div class="bar-fill fill-hunger" id="hungerBar" style="width:80%"></div></div>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">🧼清洁</span>
+                    <div class="bar-bg"><div class="bar-fill fill-clean" id="cleanBar" style="width:80%"></div></div>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">😊心情</span>
+                    <div class="bar-bg"><div class="bar-fill fill-mood" id="moodBar" style="width:80%"></div></div>
+                </div>
+            </div>
+            <div class="egg-progress">
+                <div class="egg-progress-label">
+                    <span>🥚 产蛋进度</span>
+                    <span id="eggProgressText">0%</span>
+                </div>
+                <div class="egg-progress-bar">
+                    <div class="egg-progress-fill" id="eggProgressFill"></div>
+                </div>
+            </div>
+            <div class="egg-stats">
+                <div class="egg-stat"><span class="egg-emoji">🥚</span> 鸡蛋 <strong id="homeEggCount">0</strong></div>
+                <div class="egg-stat"><span class="egg-emoji">🦅</span> 老鹰蛋 <strong id="homeEagleEggCount">0</strong></div>
+                <div class="egg-stat"><span class="egg-emoji">🔥</span> 凤凰蛋 <strong id="homePhoenixEggCount">0</strong></div>
+            </div>
+        </div>
+        <div class="buttons-grid">
+            <button class="btn" id="btnMiniGames">🎮 去玩小游戏</button>
+            <button class="btn btn-secondary" id="btnShop">🛒 道具商店</button>
+            <button class="btn btn-secondary" id="btnEggShop">🥚 鸡蛋兑换</button>
+            <button class="btn" id="btnKnowledge">📚 环保知识</button>
+        </div>
+    </div>
+
+    <div id="screenMiniSelect" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" id="backFromMiniSelect">←</button>
+            <span class="screen-title">环保小游戏</span>
+        </div>
+        <div class="card-list" id="miniGameList"></div>
+    </div>
+
+    <div id="screenShop" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" id="backFromShop">←</button>
+            <span class="screen-title">道具商店</span>
+        </div>
+        <div class="card-list" id="shopList"></div>
+    </div>
+
+    <div id="screenEggShop" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" id="backFromEggShop">←</button>
+            <span class="screen-title">🥚 鸡蛋兑换商城</span>
+        </div>
+        <div class="card-list" id="eggShopList"></div>
+    </div>
+
+    <div id="screenKnowledge" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" id="backFromKnowledge">←</button>
+            <span class="screen-title">📖 环保知识库</span>
+        </div>
+        <div id="knowledgeList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+
+    <div id="screenGamePlay" class="screen">
+        <div class="nav-header">
+            <button class="back-btn" id="backFromGamePlay">←</button>
+            <span class="screen-title" id="gamePlayTitle">小游戏</span>
+        </div>
+        <div id="gamePlayContent" class="flex-col" style="gap:10px;"></div>
+    </div>
+</div>
+<script>
+    // ==================== 存档系统（自动持久化） ====================
+    // 使用固定的存档ID，只要不点"新建存档"就永远保留
+    // 用户可以直接关闭网页、刷新、重新打开，进度都会自动保留
+    const MAIN_SAVE_ID = 'main'; // 固定主存档ID
+    const SAVE_KEY_PREFIX = 'ecoChickenSave_';
+    const SAVE_KEY = SAVE_KEY_PREFIX + MAIN_SAVE_ID;
+
+    console.log('存档键名:', SAVE_KEY);
+
+    // ==================== 环保知识库 ====================
+    const KNOWLEDGE_POOL = {
+        trash: [
+            { title: '厨余垃圾', content: '剩菜剩饭、果皮果核属于厨余垃圾，可以堆肥变成有机肥料。' },
+            { title: '可回收物', content: '塑料瓶、易拉罐、旧报纸都是可回收物，回收1吨废纸可以少砍17棵树。' },
+            { title: '有害垃圾', content: '废电池、过期药品、废灯管属于有害垃圾，1节1号电池会污染1平方米土壤。' },
+            { title: '其他垃圾', content: '纸巾、烟头、陶瓷碎片属于其他垃圾，难以回收利用。' },
+            { title: '玻璃回收', content: '玻璃可以无限次回收利用，回收1个玻璃瓶节省的能源可以让灯泡亮4小时。' },
+            { title: '垃圾分类好处', content: '垃圾分类可以减少60%的垃圾填埋量，让资源得到循环利用。' },
+            { title: '厨余堆肥', content: '1吨厨余垃圾可以产生0.3吨有机肥料，用于种植花草蔬菜。' },
+            { title: '废纸重生', content: '回收的废纸可以制成再生纸，1吨再生纸可以拯救17棵大树。' },
+            { title: '塑料污染', content: '塑料袋需要几百年才能降解，尽量使用布袋或纸袋购物。' },
+            { title: '金属回收', content: '回收1个铝罐节省的能源可以让电视播放3小时。' },
+            { title: '电子垃圾', content: '废旧手机、电脑属于电子垃圾，含有重金属，需专业回收处理。' },
+            { title: '旧衣回收', content: '旧衣服可以捐赠或回收再利用，减少纺织垃圾。' },
+        ],
+        ocean: [
+            { title: '塑料降解', content: '一个塑料瓶在海洋中需要450年才能降解，会危害海洋生物。' },
+            { title: '海洋塑料', content: '每年有800万吨塑料流入海洋，相当于每分钟倒入一卡车塑料。' },
+            { title: '海龟误食', content: '海龟常把塑料袋当成水母误食，导致肠道堵塞而死亡。' },
+            { title: '微塑料', content: '塑料在海洋中分解成微塑料，会被鱼类吃下，最终进入人类食物链。' },
+            { title: '海洋保护', content: '海洋是地球之肺，提供了地球50%的氧气，保护海洋就是保护我们自己。' },
+            { title: '减少塑料', content: '自带水杯、购物袋，每年可以减少数百个塑料制品的使用。' },
+            { title: '珊瑚危机', content: '海洋塑料垃圾会缠绕珊瑚，导致珊瑚白化死亡。' },
+            { title: '海洋生物', content: '全球每年有10万海洋生物因塑料垃圾而死亡。' },
+            { title: '海洋吸碳', content: '海洋吸收了人类排放四分之一的二氧化碳，帮助减缓气候变化。' },
+            { title: '渔业垃圾', content: '废弃渔网是海洋中最大的塑料污染源之一，会缠绕海洋动物。' },
+            { title: '海洋保护区', content: '设立海洋保护区可以保护海洋生态系统，让海洋生物繁衍。' },
+            { title: '减少使用', content: '拒绝一次性塑料吸管、餐具，从源头减少海洋塑料污染。' },
+        ],
+        water: [
+            { title: '滴水浪费', content: '一个滴水的水龙头一天浪费十几升水，一年浪费4000多升。' },
+            { title: '刷牙节水', content: '刷牙时关水龙头，每次可以节约6升水。' },
+            { title: '节水淋浴', content: '缩短淋浴时间2分钟，可以节约20升水。' },
+            { title: '一水多用', content: '洗菜水可以用来浇花、冲厕所，一水多用能节约30%的家庭用水。' },
+            { title: '全球水资源', content: '地球上只有2.5%是淡水，其中可利用的不到1%。' },
+            { title: '漏水管', content: '一个漏水马桶一个月浪费200多升水，及时维修很重要。' },
+            { title: '水资源短缺', content: '全球有20亿人面临严重缺水的困境，节约用水人人有责。' },
+            { title: '洗车节水', content: '用桶装水洗车比水管冲洗节约200升水。' },
+            { title: '雨水收集', content: '收集雨水浇花、洗车，可以减少自来水的使用。' },
+            { title: '节水洗衣', content: '洗衣机满载再洗，比分开洗节约50%的水。' },
+            { title: '水龙头关紧', content: '洗手打肥皂时关水龙头，一年可以节约数十升水。' },
+            { title: '农田节水', content: '滴灌技术比传统漫灌节约50%以上的农业用水。' },
+        ],
+    };
+
+    const usedKnowledge = { trash: [], ocean: [], water: [] };
+
+    function getKnowledge(type) {
+        const pool = KNOWLEDGE_POOL[type];
+        const used = usedKnowledge[type];
+        const available = [];
+        for (let i = 0; i < pool.length; i++) {
+            if (!used.includes(i)) available.push(i);
+        }
+        if (available.length === 0) {
+            usedKnowledge[type] = [];
+            for (let i = 0; i < pool.length; i++) available.push(i);
+        }
+        const idx = available[Math.floor(Math.random() * available.length)];
+        usedKnowledge[type].push(idx);
+        return pool[idx];
+    }
+
+    // ==================== 音效系统（双背景音乐） ====================
+    const AudioSystem = {
+        ctx: null,
+        enabled: true,
+        bgmInterval: null,
+        bgmPlaying: false,
+        bgmStyle: 0,
+        init() {
+            if (this.ctx) return;
+            try {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) { this.enabled = false; }
+        },
+        playTone(freq, duration = 0.15, type = 'sine', volume = 0.15) {
+            if (!this.enabled || !this.ctx) return;
+            try {
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            } catch (e) {}
+        },
+        click() { this.playTone(880, 0.08, 'sine', 0.1); },
+        success() {
+            this.playTone(523, 0.1, 'sine', 0.15);
+            setTimeout(() => this.playTone(659, 0.1, 'sine', 0.15), 80);
+            setTimeout(() => this.playTone(784, 0.15, 'sine', 0.15), 160);
+        },
+        error() {
+            this.playTone(220, 0.15, 'sawtooth', 0.12);
+            setTimeout(() => this.playTone(180, 0.2, 'sawtooth', 0.12), 100);
+        },
+        reward() {
+            this.playTone(659, 0.1, 'triangle', 0.15);
+            setTimeout(() => this.playTone(784, 0.1, 'triangle', 0.15), 100);
+            setTimeout(() => this.playTone(1047, 0.25, 'triangle', 0.15), 200);
+        },
+        pet() {
+            this.playTone(600, 0.1, 'sine', 0.12);
+            setTimeout(() => this.playTone(800, 0.15, 'sine', 0.12), 80);
+        },
+        egg() {
+            this.playTone(700, 0.1, 'sine', 0.15);
+            setTimeout(() => this.playTone(900, 0.1, 'sine', 0.15), 100);
+            setTimeout(() => this.playTone(1200, 0.3, 'sine', 0.15), 200);
+        },
+        splash() {
+            this.playTone(400, 0.05, 'square', 0.08);
+            setTimeout(() => this.playTone(600, 0.08, 'sine', 0.08), 50);
+        },
+        evolve() {
+            this.playTone(523, 0.15, 'triangle', 0.2);
+            setTimeout(() => this.playTone(659, 0.15, 'triangle', 0.2), 120);
+            setTimeout(() => this.playTone(784, 0.15, 'triangle', 0.2), 240);
+            setTimeout(() => this.playTone(1047, 0.3, 'triangle', 0.25), 360);
+            setTimeout(() => this.playTone(1319, 0.5, 'triangle', 0.25), 500);
+        },
+        startBGM() {
+            if (!this.enabled || !this.ctx || this.bgmPlaying) return;
+            this.init();
+            this.bgmPlaying = true;
+            if (this.bgmStyle === 0) {
+                const notes = [262, 330, 392, 523, 392, 330, 294, 349, 440, 587, 440, 349];
+                let i = 0;
+                const playNext = () => {
+                    if (!this.bgmPlaying) return;
+                    this.playTone(notes[i % notes.length], 0.4, 'sine', 0.04);
+                    i++;
+                };
+                setTimeout(() => {
+                    playNext();
+                    this.bgmInterval = setInterval(playNext, 500);
+                }, 300);
+            } else {
+                const notes = [392, 523, 659, 784, 659, 523, 440, 587, 740, 880, 740, 587];
+                let i = 0;
+                const playNext = () => {
+                    if (!this.bgmPlaying) return;
+                    this.playTone(notes[i % notes.length], 0.25, 'triangle', 0.05);
+                    if (i % 2 === 0) this.playTone(130, 0.1, 'sine', 0.06);
+                    i++;
+                };
+                setTimeout(() => {
+                    playNext();
+                    this.bgmInterval = setInterval(playNext, 300);
+                }, 300);
+            }
+        },
+        stopBGM() {
+            this.bgmPlaying = false;
+            if (this.bgmInterval) { clearInterval(this.bgmInterval); this.bgmInterval = null; }
+        },
+        toggle() {
+            this.enabled = !this.enabled;
+            if (!this.enabled) this.stopBGM();
+            else { this.init(); this.startBGM(); }
+            return this.enabled;
+        },
+        switchStyle() {
+            this.bgmStyle = this.bgmStyle === 0 ? 1 : 0;
+            this.stopBGM();
+            if (this.enabled) {
+                setTimeout(() => this.startBGM(), 100);
+            }
+            return this.bgmStyle;
+        }
+    };
+
+    // ==================== 游戏状态 ====================
+    const DEFAULT_STATE = {
+        coins: 120,
+        eggs: 0,
+        eagleEggs: 0,
+        phoenixEggs: 0,
+        hunger: 80,
+        clean: 80,
+        mood: 80,
+        stage: 0,
+        eggsLaidTotal: 0,
+        feedCount: 0,
+        day: 1,
+        dailyPlays: { trash: 10, ocean: 10, water: 10 },
+        knowledge: [],
+        usedKnowledge: { trash: [], ocean: [], water: [] },
+        currentSkin: 0,
+        ownedSkins: [0],
+        lastEggTime: Date.now(),
+        eggInterval: 120000,
+        lastDailyReset: new Date().toDateString(),
+        welcomed: false,
+    };
+
+    function loadState() {
+        try {
+            const saved = localStorage.getItem(SAVE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                const merged = { ...DEFAULT_STATE, ...parsed };
+                const today = new Date().toDateString();
+                if (merged.lastDailyReset !== today) {
+                    merged.dailyPlays = { trash: 10, ocean: 10, water: 10 };
+                    merged.day += 1;
+                    merged.lastDailyReset = today;
+                }
+                return merged;
+            }
+        } catch (e) { console.warn('存档损坏', e); }
+        return { ...DEFAULT_STATE };
+    }
+
+    function saveState() {
+        try {
+            const toSave = {
+                coins: state.coins, eggs: state.eggs, eagleEggs: state.eagleEggs, phoenixEggs: state.phoenixEggs,
+                hunger: state.hunger, clean: state.clean, mood: state.mood,
+                stage: state.stage, eggsLaidTotal: state.eggsLaidTotal, feedCount: state.feedCount,
+                day: state.day, dailyPlays: state.dailyPlays, knowledge: state.knowledge,
+                usedKnowledge: usedKnowledge, currentSkin: state.currentSkin, ownedSkins: state.ownedSkins,
+                lastEggTime: state.lastEggTime, lastDailyReset: state.lastDailyReset,
+                welcomed: state.welcomed,
+            };
+            localStorage.setItem(SAVE_KEY, JSON.stringify(toSave));
+        } catch (e) {}
+    }
+
+    const state = loadState();
+    if (state.usedKnowledge) {
+        Object.keys(usedKnowledge).forEach(k => {
+            if (Array.isArray(state.usedKnowledge[k])) usedKnowledge[k] = state.usedKnowledge[k];
+        });
+    }
+
+    const DECAY_RATE = { hunger: 0.08, clean: 0.05, mood: 0.06 };
+
+    const SKIN_EMOJI = {
+        0: ['🐣', '🦅', '🔥'],
+        1: ['🔥', '🔥', '🔥'],
+    };
+
+    const EGG_EMOJI = { 0: '🥚', 1: '🦅', 2: '🔥' };
+    const EGG_NAME = { 0: '鸡蛋', 1: '老鹰蛋', 2: '凤凰蛋' };
+
+    const MINI_GAMES = [
+        { id: 'trash', name: '垃圾分类大挑战', icon: '🗑️', desc: '拖动垃圾到正确垃圾桶，每对+5分', maxDaily: 10 },
+        { id: 'ocean', name: '海洋清道夫', icon: '🌊', desc: '闯关式海洋清理，3关30分', maxDaily: 10 },
+        { id: 'water', name: '节水守护', icon: '🚰', desc: '打地鼠式关水龙头，满分30', maxDaily: 10 },
+    ];
+
+    const SHOP_ITEMS = [
+        { id: 'feed1', name: '基础饲料', icon: '🌾', price: 30, effect: { hunger: 30 }, desc: '+30 饥饿值' },
+        { id: 'feed2', name: '高级营养饲料', icon: '🥦', price: 60, effect: { hunger: 60, mood: 10 }, desc: '+60 饥饿, +10 心情' },
+        { id: 'clean1', name: '清洁喷雾', icon: '🧴', price: 25, effect: { clean: 40 }, desc: '+40 清洁值' },
+        { id: 'growth', name: '生长激素', icon: '💉', price: 50, effect: { shortenEgg: 60000 }, desc: '产蛋时间缩短1分钟' },
+        { id: 'skinFire', name: '火焰环绕装扮', icon: '🔥', price: 150, effect: {}, desc: '小鸡周围环绕火焰特效', skinId: 1 },
+    ];
+
+    const EGG_SHOP = [
+        { id: 'gift1', name: '环保贴纸/书签', icon: '🔖', eggs: 3 },
+        { id: 'gift2', name: '种子盆栽(绿植)', icon: '🌱', eggs: 8 },
+        { id: 'gift3', name: '环保帆布袋', icon: '👜', eggs: 15 },
+        { id: 'gift4', name: '定制环保笔记本', icon: '📒', eggs: 25 },
+        { id: 'gift5', name: '环保主题公仔', icon: '🧸', eggs: 40 },
+        { id: 'exchange1', name: '🦅 老鹰蛋 → 2颗鸡蛋', icon: '🔄', eggs: 2, isExchange: true, fromType: 1, toType: 0, fromCount: 1, toCount: 2 },
+        { id: 'exchange2', name: '🔥 凤凰蛋 → 3颗鸡蛋', icon: '🔄', eggs: 3, isExchange: true, fromType: 2, toType: 0, fromCount: 1, toCount: 3 },
+    ];
+
+    // ==================== 粒子特效 ====================
+    function spawnParticles(x, y, emojis = ['✨', '⭐', '💚'], count = 8) {
+        const container = document.getElementById('gameContainer');
+        const rect = container.getBoundingClientRect();
+        for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            p.style.left = (x - rect.left) + 'px';
+            p.style.top = (y - rect.top) + 'px';
+            const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+            const dist = 60 + Math.random() * 80;
+            p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+            p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+            container.appendChild(p);
+            setTimeout(() => p.remove(), 1300);
+        }
+    }
+
+    function clamp(value, min = 0, max = 100) {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    function pulseResource(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove('pulse');
+        void el.offsetWidth;
+        el.classList.add('pulse');
+        setTimeout(() => el.classList.remove('pulse'), 500);
+    }
+
+    function getChickenEmoji() {
+        const skin = state.currentSkin;
+        const stage = state.stage;
+        const skinMap = SKIN_EMOJI[skin] || SKIN_EMOJI[0];
+        return skinMap[stage] || '🐣';
+    }
+
+    function getChickenName() {
+        let base = '';
+        if (state.stage === 0) base = '小鸡 · 啾啾';
+        else if (state.stage === 1) base = '老鹰 · 傲天';
+        else base = '凤凰 · 涅槃';
+        return base;
+    }
+
+    function getCurrentEggType() { return state.stage; }
+    function getCurrentEggCount() {
+        if (state.stage === 0) return state.eggs;
+        if (state.stage === 1) return state.eagleEggs;
+        return state.phoenixEggs;
+    }
+    function addCurrentEgg(n = 1) {
+        if (state.stage === 0) state.eggs += n;
+        else if (state.stage === 1) state.eagleEggs += n;
+        else state.phoenixEggs += n;
+    }
+
+    function updateUI() {
+        document.getElementById('coinCount').innerText = Math.floor(state.coins);
+        document.getElementById('eggCount').innerText = state.eggs;
+        document.getElementById('eagleEggCount').innerText = state.eagleEggs;
+        document.getElementById('phoenixEggCount').innerText = state.phoenixEggs;
+        document.getElementById('dateDisplay').innerText = `📅 第${state.day}天`;
+
+        document.getElementById('homeEggCount').innerText = state.eggs;
+        document.getElementById('homeEagleEggCount').innerText = state.eagleEggs;
+        document.getElementById('homePhoenixEggCount').innerText = state.phoenixEggs;
+
+        document.getElementById('hungerBar').style.width = clamp(state.hunger) + '%';
+        document.getElementById('cleanBar').style.width = clamp(state.clean) + '%';
+        document.getElementById('moodBar').style.width = clamp(state.mood) + '%';
+
+        let newStage = 0;
+        if (state.eggsLaidTotal >= 10) newStage = 2;
+        else if (state.eggsLaidTotal >= 5) newStage = 1;
+        if (newStage !== state.stage) state.stage = newStage;
+
+        document.getElementById('chickenEmoji').innerText = getChickenEmoji();
+        document.getElementById('chickenStage').innerText = getChickenName();
+
+        const avatar = document.getElementById('chickenEmoji');
+        if (state.currentSkin === 1) {
+            avatar.style.textShadow = '0 0 20px #ff6600, 0 0 40px #ff3300, 0 0 60px #ff9900';
+        } else {
+            avatar.style.textShadow = 'none';
+        }
+
+        const hint = document.getElementById('chickenHint');
+        if (state.mood >= 95) hint.style.display = 'none';
+        else hint.style.display = 'block';
+
+        const now = Date.now();
+        const elapsed = now - state.lastEggTime;
+        const progress = Math.min(100, Math.max(0, (elapsed / state.eggInterval) * 100));
+        document.getElementById('eggProgressFill').style.width = progress + '%';
+        const remainSec = Math.max(0, Math.ceil((state.eggInterval - elapsed) / 1000));
+        document.getElementById('eggProgressText').innerText = 
+            state.hunger >= 70 && state.clean >= 70 && state.mood >= 70 
+                ? (progress >= 100 ? '可以下蛋了！' : `还需 ${Math.floor(remainSec/60)}分${remainSec%60}秒`)
+                : '状态不足，停止计时';
+
+        if (document.getElementById('screenMiniSelect').classList.contains('active')) renderMiniGames();
+        if (document.getElementById('screenShop').classList.contains('active')) renderShop();
+        if (document.getElementById('screenEggShop').classList.contains('active')) renderEggShop();
+        if (document.getElementById('screenKnowledge').classList.contains('active')) renderKnowledge();
+
+        saveState();
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        if (screenId === 'screenMiniSelect') renderMiniGames();
+        if (screenId === 'screenShop') renderShop();
+        if (screenId === 'screenEggShop') renderEggShop();
+        if (screenId === 'screenKnowledge') renderKnowledge();
+        if (screenId === 'screenHome') updateUI();
+    }
+
+    function checkDailyReset() {
+        const today = new Date().toDateString();
+        if (state.lastDailyReset !== today) {
+            state.dailyPlays = { trash: 10, ocean: 10, water: 10 };
+            state.day += 1;
+            state.lastDailyReset = today;
+            saveState();
+        }
+    }
+
+    function decayStats() {
+        checkDailyReset();
+        state.hunger = clamp(state.hunger - DECAY_RATE.hunger * 5);
+        state.clean = clamp(state.clean - DECAY_RATE.clean * 5);
+        state.mood = clamp(state.mood - DECAY_RATE.mood * 5);
+        if (state.clean < 30) state.mood = clamp(state.mood - 0.5);
+        if (state.hunger < 30) state.mood = clamp(state.mood - 0.5);
+
+        const now = Date.now();
+        if (state.hunger >= 70 && state.clean >= 70 && state.mood >= 70) {
+            if (now - state.lastEggTime >= state.eggInterval) {
+                addCurrentEgg(1);
+                state.eggsLaidTotal += 1;
+                state.lastEggTime = now;
+                AudioSystem.egg();
+                checkEvolution();
+                const eggType = getCurrentEggType();
+                pulseResource(eggType === 0 ? 'eggResource' : (eggType === 1 ? 'eagleEggResource' : 'phoenixEggResource'));
+                showResultModal({
+                    emoji: EGG_EMOJI[eggType],
+                    title: '小鸡下蛋啦！',
+                    score: `获得 ${EGG_NAME[eggType]} x1`,
+                    knowledge: '状态良好时小鸡会持续产蛋，蛋可用于兑换实物礼品。',
+                    buttons: [{ text: '太棒了', primary: true }]
+                });
+            }
+        } else {
+            state.lastEggTime = now;
+        }
+        updateUI();
+    }
+
+    function checkEvolution() {
+        if (state.eggsLaidTotal >= 10 && state.stage < 2) {
+            state.stage = 2;
+            triggerEvolution('phoenix');
+        } else if (state.eggsLaidTotal >= 5 && state.stage < 1) {
+            state.stage = 1;
+            triggerEvolution('eagle');
+        }
+    }
+
+    function triggerEvolution(type) {
+        AudioSystem.evolve();
+        const avatar = document.getElementById('chickenEmoji');
+        avatar.classList.add('evolving');
+        setTimeout(() => avatar.classList.remove('evolving'), 1300);
+
+        const oldEmoji = type === 'eagle' ? '🐣' : '🦅';
+        const newEmoji = type === 'eagle' ? '🦅' : '🔥';
+        const newName = type === 'eagle' ? '老鹰 · 傲天' : '凤凰 · 涅槃';
+        const desc = type === 'eagle'
+            ? '你的小鸡长大了，进化为威风凛凛的老鹰！<br>现在开始产 <strong>🦅 老鹰蛋</strong> 啦！'
+            : '你的老鹰浴火重生，进化为神圣的凤凰！<br>现在开始产 <strong>🔥 凤凰蛋</strong> 啦！';
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay evolve-modal';
+        const card = document.createElement('div');
+        card.className = 'modal-card';
+        card.innerHTML = `
+            <div class="evolve-stage" id="evolveEmoji">${oldEmoji}</div>
+            <div class="evolve-title">✨ 进 化 ✨</div>
+            <div class="modal-title">${newName}</div>
+            <div class="modal-tutorial">${desc}</div>
+            <div class="modal-buttons">
+                <button class="modal-btn primary" id="evolveOkBtn">太棒了！</button>
+            </div>
+        `;
+        overlay.appendChild(card);
+        document.getElementById('gameContainer').appendChild(overlay);
+
+        const emojiEl = document.getElementById('evolveEmoji');
+        setTimeout(() => {
+            emojiEl.style.transform = 'scale(0) rotate(180deg)';
+            emojiEl.style.opacity = '0';
+        }, 600);
+        setTimeout(() => {
+            emojiEl.innerText = newEmoji;
+            emojiEl.style.transform = 'scale(1.3) rotate(0)';
+            emojiEl.style.opacity = '1';
+            AudioSystem.success();
+            spawnParticles(window.innerWidth / 2, window.innerHeight / 2,
+                type === 'eagle' ? ['🦅', '✨', '💨', '⚡'] : ['🔥', '✨', '💫', '☄️'], 16);
+        }, 900);
+
+        document.getElementById('evolveOkBtn').addEventListener('click', () => {
+            AudioSystem.click();
+            overlay.remove();
+            updateUI();
+        });
+        updateUI();
+    }
+
+    function showGlobalHelp() {
+        showResultModal({
+            emoji: '🐣',
+            title: '《环保小鸡成长记》总规则',
+            tutorial: `
+                <strong>🎯 游戏目标：</strong>照顾小鸡，玩环保游戏，赚积分换实物礼品！<br><br>
+                <strong>🔄 核心循环：</strong>玩小游戏赚积分 → 买饲料/道具 → 喂鸡 → 产蛋 → 蛋兑换礼品<br><br>
+                <strong>🐤 小鸡养成：</strong>
+                <ul>
+                    <li>三项状态：饥饿 / 清洁 / 心情（0~100）</li>
+                    <li>点击小鸡抚摸它，<strong>心情+8</strong></li>
+                    <li>三项状态全部 ≥70 时，小鸡会持续产蛋</li>
+                </ul>
+                <strong>🌟 成长进化：</strong>
+                <ul>
+                    <li>累计下 <strong>5个蛋</strong> → 进化为 🦅 老鹰</li>
+                    <li>累计下 <strong>10个蛋</strong> → 进化为 🔥 凤凰</li>
+                    <li>不同阶段产出不同的蛋</li>
+                </ul>
+                <strong>💰 蛋的价值：</strong>🥚鸡蛋=1份 · 🦅老鹰蛋=2份 · 🔥凤凰蛋=3份<br>
+                <strong>💉 生长激素：</strong>产蛋时间缩短1分钟。<br>
+                <strong>🎵 音乐切换：</strong>顶部音乐按钮可切换轻快/激情BGM。<br>
+                <strong>💾 自动保存：</strong>进度会自动保存，关闭网页后重新打开仍在。<br>
+                <strong>🔄 新建存档：</strong>点击顶部🔄按钮才会清空进度重新开始。
+            `,
+            buttons: [{ text: '开始游戏！', primary: true }]
+        });
+    }
+
+    // ==================== 小鸡互动 ====================
+    document.getElementById('chickenEmoji').addEventListener('click', (e) => {
+        state.mood = clamp(state.mood + 8);
+        updateUI();
+        AudioSystem.pet();
+        const avatar = document.getElementById('chickenEmoji');
+        avatar.classList.remove('petted');
+        void avatar.offsetWidth;
+        avatar.classList.add('petted');
+        setTimeout(() => avatar.classList.remove('petted'), 500);
+        spawnParticles(e.clientX, e.clientY, ['💚', '✨', '💕', '⭐'], 8);
+        const reactions = ['叽叽~', '好舒服！', '啾啾！', '再摸摸~', '开心！'];
+        showResultModal({
+            emoji: getChickenEmoji(),
+            title: '小鸡说：',
+            score: reactions[Math.floor(Math.random() * reactions.length)] + ' (心情+8)',
+            knowledge: '抚摸小鸡能提升它的心情值，保持≥70才会产蛋哦~',
+            buttons: [{ text: '好的', primary: true }]
+        });
+    });
+
+    // ==================== 商店 ====================
+    function buyItem(item) {
+        if (state.coins < item.price) {
+            AudioSystem.error();
+            showResultModal({
+                emoji: '😢', title: '积分不足', score: '去玩小游戏赚积分吧~',
+                buttons: [{ text: '知道了', primary: true }]
+            });
+            return;
+        }
+        if (item.skinId !== undefined) {
+            if (state.ownedSkins.includes(item.skinId)) {
+                state.currentSkin = item.skinId;
+                AudioSystem.click();
+                updateUI();
+                showResultModal({
+                    emoji: item.icon, title: '切换装扮！', score: `当前装扮：${item.name}`,
+                    buttons: [{ text: '好的', primary: true }]
+                });
+                return;
+            }
+            state.coins -= item.price;
+            state.ownedSkins.push(item.skinId);
+            state.currentSkin = item.skinId;
+            AudioSystem.reward();
+            pulseResource('coinResource');
+            updateUI();
+            showResultModal({
+                emoji: item.icon, title: '🎉 解锁新装扮！', score: `获得 ${item.name} 并已切换`,
+                knowledge: '小鸡现在被火焰环绕，超酷！',
+                buttons: [{ text: '太棒了', primary: true }]
+            });
+            return;
+        }
+        state.coins -= item.price;
+        if (item.effect) {
+            if (item.effect.hunger) state.hunger = clamp(state.hunger + item.effect.hunger);
+            if (item.effect.clean) state.clean = clamp(state.clean + item.effect.clean);
+            if (item.effect.mood) state.mood = clamp(state.mood + item.effect.mood);
+            if (item.effect.hunger) state.feedCount++;
+            if (item.effect.shortenEgg) {
+                const now = Date.now();
+                const elapsed = now - state.lastEggTime;
+                const remaining = state.eggInterval - elapsed;
+                if (remaining <= item.effect.shortenEgg) {
+                    addCurrentEgg(1);
+                    state.eggsLaidTotal += 1;
+                    state.lastEggTime = now;
+                    AudioSystem.egg();
+                    checkEvolution();
+                    const eggType = getCurrentEggType();
+                    pulseResource(eggType === 0 ? 'eggResource' : (eggType === 1 ? 'eagleEggResource' : 'phoenixEggResource'));
+                    AudioSystem.success();
+                    pulseResource('coinResource');
+                    updateUI();
+                    showResultModal({
+                        emoji: '💉', title: '生长激素生效！', 
+                        score: `直接产下 ${EGG_NAME[eggType]} x1，开始下一颗蛋计时`,
+                        knowledge: '使用生长激素可以加速产蛋。',
+                        buttons: [{ text: '太棒了', primary: true }]
+                    });
+                    return;
+                } else {
+                    state.lastEggTime = now - (elapsed + item.effect.shortenEgg);
+                }
+            }
+        }
+        AudioSystem.success();
+        pulseResource('coinResource');
+        updateUI();
+        showResultModal({
+            emoji: item.icon, title: `购买成功！`, score: `获得 ${item.name}`,
+            knowledge: item.effect ? `效果：${item.desc}` : '',
+            buttons: [{ text: '好的', primary: true }]
+        });
+    }
+
+    function redeemGift(gift) {
+        if (gift.isExchange) {
+            const fromCount = state[gift.fromType === 1 ? 'eagleEggs' : 'phoenixEggs'];
+            if (fromCount < gift.fromCount) {
+                AudioSystem.error();
+                showResultModal({
+                    emoji: '🥚', title: '蛋不足', score: `需要 ${gift.fromCount} 个${EGG_NAME[gift.fromType]}`,
+                    buttons: [{ text: '知道了', primary: true }]
+                });
+                return;
+            }
+            state[gift.fromType === 1 ? 'eagleEggs' : 'phoenixEggs'] -= gift.fromCount;
+            state.eggs += gift.toCount;
+            AudioSystem.reward();
+            pulseResource('eggResource');
+            updateUI();
+            showResultModal({
+                emoji: '🔄', title: '兑换成功！', 
+                score: `${gift.fromCount}个${EGG_NAME[gift.fromType]} → ${gift.toCount}颗鸡蛋`,
+                knowledge: '不同蛋的价值：🥚=1 · 🦅=2 · 🔥=3',
+                buttons: [{ text: '好的', primary: true }]
+            });
+            return;
+        }
+        const totalValue = state.eggs * 1 + state.eagleEggs * 2 + state.phoenixEggs * 3;
+        if (totalValue < gift.eggs) {
+            AudioSystem.error();
+            showResultModal({
+                emoji: '🥚', title: '蛋价值不足',
+                score: `需要价值 ${gift.eggs} 的蛋，当前 ${totalValue}`,
+                knowledge: '🥚鸡蛋=1份 · 🦅老鹰蛋=2份 · 🔥凤凰蛋=3份',
+                buttons: [{ text: '知道了', primary: true }]
+            });
+            return;
+        }
+        let need = gift.eggs;
+        const useEggs = Math.min(state.eggs, need);
+        state.eggs -= useEggs;
+        need -= useEggs;
+        if (need > 0) {
+            const useEagle = Math.min(state.eagleEggs, Math.ceil(need / 2));
+            state.eagleEggs -= useEagle;
+            need -= useEagle * 2;
+        }
+        if (need > 0) {
+            const usePhoenix = Math.min(state.phoenixEggs, Math.ceil(need / 3));
+            state.phoenixEggs -= usePhoenix;
+        }
+        AudioSystem.reward();
+        pulseResource('eggResource');
+        updateUI();
+        showResultModal({
+            emoji: gift.icon, title: '🎉 兑换成功！', score: `获得 ${gift.name}（实物礼品）`,
+            knowledge: '请联系活动管理员领取你的实物礼品。',
+            buttons: [{ text: '太棒了', primary: true }]
+        });
+    }
+
+    // ==================== 渲染 ====================
+    function renderMiniGames() {
+        const container = document.getElementById('miniGameList');
+        container.innerHTML = '';
+        MINI_GAMES.forEach(game => {
+            const remain = state.dailyPlays[game.id];
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-left">
+                    <div class="card-icon">${game.icon}</div>
+                    <div class="card-info">
+                        <h4>${game.name}</h4>
+                        <p>${game.desc}</p>
+                    </div>
+                </div>
+                <div class="card-right"><span>剩余 ${remain} 次</span></div>
+            `;
+            card.addEventListener('click', () => {
+                AudioSystem.click();
+                if (state.dailyPlays[game.id] <= 0) {
+                    AudioSystem.error();
+                    showResultModal({
+                        emoji: '⏰', title: '今日次数已用完', score: '明天再来吧~',
+                        buttons: [{ text: '好的', primary: true }]
+                    });
+                    return;
+                }
+                startMiniGame(game.id);
+            });
+            container.appendChild(card);
+        });
+    }
+
+    function renderShop() {
+        const container = document.getElementById('shopList');
+        container.innerHTML = '';
+        SHOP_ITEMS.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            const isSkin = item.skinId !== undefined;
+            const owned = isSkin && state.ownedSkins.includes(item.skinId);
+            const using = isSkin && state.currentSkin === item.skinId;
+            let badge = '';
+            if (using) badge = '<span style="font-size:10px;color:#2b4d1f;">✓ 使用中</span>';
+            else if (owned) badge = '<span style="font-size:10px;color:#2b4d1f;">已拥有</span>';
+            card.innerHTML = `
+                <div class="card-left">
+                    <div class="card-icon">${item.icon}</div>
+                    <div class="card-info">
+                        <h4>${item.name} ${badge}</h4>
+                        <p>${item.desc}</p>
+                    </div>
+                </div>
+                <div class="price-tag">${owned ? '切换' : '⭐ ' + item.price}</div>
+            `;
+            card.addEventListener('click', () => buyItem(item));
+            container.appendChild(card);
+        });
+    }
+
+    function renderEggShop() {
+        const container = document.getElementById('eggShopList');
+        container.innerHTML = '';
+        EGG_SHOP.forEach(gift => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            if (gift.isExchange) {
+                card.innerHTML = `
+                    <div class="card-left">
+                        <div class="card-icon">${gift.icon}</div>
+                        <div class="card-info">
+                            <h4>${gift.name}</h4>
+                            <p>1个换${gift.toCount}颗鸡蛋</p>
+                        </div>
+                    </div>
+                    <div class="price-tag egg-price">🔄</div>
+                `;
+            } else {
+                card.innerHTML = `
+                    <div class="card-left">
+                        <div class="card-icon">${gift.icon}</div>
+                        <div class="card-info">
+                            <h4>${gift.name}</h4>
+                            <p>需要 ${gift.eggs} 份蛋价值</p>
+                        </div>
+                    </div>
+                    <div class="price-tag egg-price">🍳 ${gift.eggs}</div>
+                `;
+            }
+            card.addEventListener('click', () => redeemGift(gift));
+            container.appendChild(card);
+        });
+    }
+
+    function renderKnowledge() {
+        const container = document.getElementById('knowledgeList');
+        container.innerHTML = '';
+        if (state.knowledge.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:#4c6b3e;padding:20px;">还没有知识，去玩小游戏学习吧~</p>';
+            return;
+        }
+        state.knowledge.forEach(k => {
+            const div = document.createElement('div');
+            div.className = 'knowledge-popup';
+            div.innerHTML = `<strong>${k.title}</strong><br>${k.content}`;
+            container.appendChild(div);
+        });
+    }
+
+    function showResultModal({ emoji = '📢', title = '提示', score = '', knowledge = '', tutorial = '', buttons = [] }) {
+        const oldModal = document.querySelector('.modal-overlay:not(.evolve-modal)');
+        if (oldModal) oldModal.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+
+        const card = document.createElement('div');
+        card.className = 'modal-card';
+
+        card.innerHTML = `
+            <div class="modal-emoji">${emoji}</div>
+            <div class="modal-title">${title}</div>
+            ${score ? `<div class="modal-score">${score}</div>` : ''}
+            ${tutorial ? `<div class="modal-tutorial">${tutorial}</div>` : ''}
+            ${knowledge ? `<div class="modal-knowledge"><span class="k-label">🌱 环保小知识</span>${knowledge}</div>` : ''}
+            <div class="modal-buttons"></div>
+        `;
+
+        const btnContainer = card.querySelector('.modal-buttons');
+        buttons.forEach(btnConf => {
+            const btn = document.createElement('button');
+            btn.className = 'modal-btn' + (btnConf.primary ? ' primary' : '');
+            btn.innerText = btnConf.text;
+            btn.addEventListener('click', () => {
+                AudioSystem.click();
+                overlay.remove();
+                if (typeof btnConf.onClick === 'function') btnConf.onClick();
+            });
+            btnContainer.appendChild(btn);
+        });
+
+        if (buttons.length === 0) {
+            const btn = document.createElement('button');
+            btn.className = 'modal-btn primary';
+            btn.innerText = '好的';
+            btn.addEventListener('click', () => { AudioSystem.click(); overlay.remove(); });
+            btnContainer.appendChild(btn);
+        }
+
+        overlay.appendChild(card);
+        document.getElementById('gameContainer').appendChild(overlay);
+    }
+
+    // ==================== 小游戏 ====================
+    let currentGameCleanup = null;
+
+    function startMiniGame(gameId) {
+        if (state.dailyPlays[gameId] <= 0) return;
+        state.dailyPlays[gameId]--;
+        saveState();
+        showScreen('screenGamePlay');
+        const titleMap = { trash: '垃圾分类大挑战', ocean: '海洋清道夫', water: '节水守护' };
+        document.getElementById('gamePlayTitle').innerText = titleMap[gameId];
+        const content = document.getElementById('gamePlayContent');
+        content.innerHTML = '';
+
+        if (gameId === 'trash') startTrashGame(content);
+        else if (gameId === 'ocean') startOceanGame(content);
+        else if (gameId === 'water') startWaterGame(content);
+
+        updateUI();
+    }
+
+    // ----- 小游戏1: 垃圾分类 -----
+    function startTrashGame(container) {
+        container.innerHTML = `
+            <div class="game-score">得分: <span id="trashScore">0</span> / 25</div>
+            <div id="trashItemArea">
+                <div id="trashEmoji">🍌</div>
+                <div class="trash-item-name" id="trashItemName">香蕉皮</div>
+            </div>
+            <div class="trash-row" id="trashBinRow">
+                <div class="trash-bin" data-type="recycle">♻️<br>可回收</div>
+                <div class="trash-bin" data-type="kitchen">🍎<br>厨余</div>
+                <div class="trash-bin" data-type="harmful">☠️<br>有害</div>
+                <div class="trash-bin" data-type="other">🗑️<br>其他</div>
+            </div>
+            <div class="game-controls">
+                <button class="game-btn help" id="trashHelpBtn">❓ 玩法说明</button>
+                <button class="game-btn" id="trashNextBtn">下一个垃圾</button>
+            </div>
+        `;
+
+        const items = [
+            { emoji: '🍌', name: '香蕉皮', type: 'kitchen' },
+            { emoji: '🥫', name: '易拉罐', type: 'recycle' },
+            { emoji: '🔋', name: '废电池', type: 'harmful' },
+            { emoji: '🧻', name: '卫生纸', type: 'other' },
+            { emoji: '🍎', name: '苹果核', type: 'kitchen' },
+            { emoji: '📰', name: '旧报纸', type: 'recycle' },
+            { emoji: '💊', name: '过期药', type: 'harmful' },
+            { emoji: '🥡', name: '外卖盒', type: 'other' },
+            { emoji: '🍾', name: '玻璃瓶', type: 'recycle' },
+            { emoji: '🍗', name: '鸡骨头', type: 'kitchen' },
+            { emoji: '🪥', name: '旧牙刷', type: 'other' },
+            { emoji: '💡', name: '荧光灯管', type: 'harmful' },
+            { emoji: '📦', name: '快递纸箱', type: 'recycle' },
+            { emoji: '🍉', name: '西瓜皮', type: 'kitchen' },
+            { emoji: '🧴', name: '洗发水瓶', type: 'recycle' },
+            { emoji: '🩹', name: '创可贴', type: 'other' },
+            { emoji: '🖌️', name: '油漆桶', type: 'harmful' },
+            { emoji: '🥬', name: '菜叶', type: 'kitchen' },
+            { emoji: '👕', name: '旧衣服', type: 'recycle' },
+            { emoji: '🚬', name: '烟头', type: 'other' },
+        ];
+        let currentItem = null;
+        let score = 0;
+        let played = 0;
+        const totalItems = 5;
+        let selectedBin = null;
+
+        const scoreSpan = document.getElementById('trashScore');
+        const trashEmoji = document.getElementById('trashEmoji');
+        const trashItemName = document.getElementById('trashItemName');
+        const bins = document.querySelectorAll('.trash-bin');
+        const nextBtn = document.getElementById('trashNextBtn');
+        const helpBtn = document.getElementById('trashHelpBtn');
+
+        function showTrashHelp() {
+            showResultModal({
+                emoji: '🗑️',
+                title: '垃圾分类 · 玩法说明',
+                tutorial: `
+                    <strong>🎯 目标：</strong>把出现的垃圾放进正确的垃圾桶。<br><br>
+                    <strong>🕹️ 操作：</strong>
+                    <ul>
+                        <li>先点击下方一个垃圾桶（选中变黄）</li>
+                        <li>再点击“下一个垃圾”按钮提交</li>
+                        <li>每放对一个垃圾 <strong>+5分</strong></li>
+                        <li>共5个垃圾，<strong>积分上限25分</strong></li>
+                    </ul>
+                    <strong>🗑️ 垃圾桶分类：</strong><br>
+                    ♻️ 可回收：塑料瓶、报纸、易拉罐<br>
+                    🍎 厨余：果皮、剩菜、菜叶<br>
+                    ☠️ 有害：电池、药品、灯管<br>
+                    🗑️ 其他：纸巾、烟头、陶瓷
+                `,
+                buttons: [{ text: '开始游戏', primary: true }]
+            });
+        }
+
+        function selectBin(e) {
+            AudioSystem.click();
+            bins.forEach(b => b.classList.remove('selected'));
+            e.currentTarget.classList.add('selected');
+            selectedBin = e.currentTarget.dataset.type;
+        }
+        bins.forEach(b => b.addEventListener('click', selectBin));
+        helpBtn.addEventListener('click', showTrashHelp);
+
+        function newItem() {
+            if (played >= totalItems) {
+                AudioSystem.reward();
+                pulseResource('coinResource');
+                updateUI();
+                showResultModal({
+                    emoji: '🗑️', title: '垃圾分类完成！',
+                    score: `得分 ⭐${score} / 25`,
+                    knowledge: '垃圾分类能减少60%的填埋量，让资源循环利用。',
+                    buttons: [
+                        { text: '再来一局', primary: true, onClick: () => { cleanupGame(); startMiniGame('trash'); } },
+                        { text: '返回', onClick: () => { cleanupGame(); showScreen('screenMiniSelect'); } }
+                    ]
+                });
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * items.length);
+            currentItem = items[randomIndex];
+            trashEmoji.innerText = currentItem.emoji;
+            trashItemName.innerText = currentItem.name;
+            trashEmoji.style.animation = 'none';
+            void trashEmoji.offsetWidth;
+            trashEmoji.style.animation = 'popIn 0.4s ease';
+            selectedBin = null;
+            bins.forEach(b => b.classList.remove('selected'));
+        }
+
+        function getBinName(type) {
+            const map = { recycle: '可回收', kitchen: '厨余', harmful: '有害', other: '其他' };
+            return map[type] || '未知';
+        }
+
+        function handleNext() {
+            if (!currentItem) return;
+            if (!selectedBin) { alert('请先选择一个垃圾桶！'); return; }
+            const k = getKnowledge('trash');
+            if (selectedBin === currentItem.type) {
+                score += 5;
+                scoreSpan.innerText = score;
+                AudioSystem.success();
+                spawnParticles(window.innerWidth / 2, window.innerHeight / 2, ['✅', '✨', '💚'], 6);
+                if (!state.knowledge.some(x => x.title === k.title)) state.knowledge.push(k);
+                saveState();
+                showResultModal({
+                    emoji: '✅', title: '正确！ +5分',
+                    score: `当前得分 ${score} / 25`,
+                    knowledge: k.content,
+                    buttons: [{ text: '继续', primary: true }]
+                });
+            } else {
+                AudioSystem.error();
+                if (!state.knowledge.some(x => x.title === k.title)) state.knowledge.push(k);
+                saveState();
+                showResultModal({
+                    emoji: '❌', title: '分类错误',
+                    score: `正确答案是：${getBinName(currentItem.type)}`,
+                    knowledge: k.content,
+                    buttons: [{ text: '继续', primary: true }]
+                });
+            }
+            played++;
+            newItem();
+        }
+
+        nextBtn.addEventListener('click', handleNext);
+        newItem();
+        setTimeout(showTrashHelp, 200);
+
+        currentGameCleanup = () => {
+            bins.forEach(b => b.removeEventListener('click', selectBin));
+            nextBtn.removeEventListener('click', handleNext);
+            helpBtn.removeEventListener('click', showTrashHelp);
+        };
+    }
+
+    // ----- 小游戏2: 海洋清道夫 -----
+    function startOceanGame(container) {
+        container.innerHTML = `
+            <div class="ocean-level-info">
+                <span>🌊 第 <span id="oceanLevel">1</span> / 3 关</span>
+                <span>得分: <span id="oceanScore">0</span> / 30</span>
+                <span>⏳ <span id="oceanTime">20</span>s</span>
+            </div>
+            <div id="oceanItems" class="ocean-area"></div>
+            <div class="game-controls">
+                <button class="game-btn help" id="oceanHelpBtn">❓ 玩法说明</button>
+                <button class="game-btn" id="oceanStartBtn">开始闯关</button>
+            </div>
+        `;
+        const oceanArea = document.getElementById('oceanItems');
+        const scoreSpan = document.getElementById('oceanScore');
+        const timeSpan = document.getElementById('oceanTime');
+        const levelSpan = document.getElementById('oceanLevel');
+        const startBtn = document.getElementById('oceanStartBtn');
+        const helpBtn = document.getElementById('oceanHelpBtn');
+        let score = 0;
+        let timeLeft = 20;
+        let timer = null;
+        let active = false;
+        let moveTimer = null;
+        let trashRemaining = 0;
+        let currentLevel = 1;
+        const MAX_LEVEL = 3;
+        const LEVEL_SCORE = 10;
+
+        function showOceanHelp() {
+            showResultModal({
+                emoji: '🌊',
+                title: '海洋清道夫 · 玩法说明',
+                tutorial: `
+                    <strong>🎯 目标：</strong>闯过3关，清理海洋垃圾，避开海洋生物。<br><br>
+                    <strong>🕹️ 玩法：</strong>
+                    <ul>
+                        <li>共 <strong>3关</strong>，每关限时20秒</li>
+                        <li>每关有 <strong>7个垃圾</strong> 和 <strong>3个海洋生物</strong></li>
+                        <li>点击垃圾 <strong>+5分</strong>，点到生物 <strong>-5分</strong></li>
+                        <li>清完一关的所有垃圾即可进入下一关</li>
+                        <li>每通过一关 <strong>+10分</strong>（满分30分）</li>
+                        <li>垃圾和生物移动速度逐关加快</li>
+                    </ul>
+                `,
+                buttons: [{ text: '开始游戏', primary: true }]
+            });
+        }
+
+        function generateItems() {
+            oceanArea.innerHTML = '';
+            trashRemaining = 7;
+            const items = [];
+            for (let i = 0; i < 7; i++) {
+                items.push({ type: 'trash', emoji: Math.random() > 0.5 ? '🥤' : '🛍️' });
+            }
+            const creatures = ['🐟', '🐢', '🐠'];
+            for (let i = 0; i < 3; i++) {
+                items.push({ type: 'creature', emoji: creatures[i] });
+            }
+            items.sort(() => Math.random() - 0.5);
+
+            const speedBase = [1.0, 1.8, 2.6][currentLevel - 1] || 1.0;
+
+            items.forEach((item) => {
+                const div = document.createElement('div');
+                div.className = 'ocean-item';
+                div.innerText = item.emoji;
+                div.dataset.type = item.type;
+                div.dataset.clicked = 'false';
+                const maxLeft = (oceanArea.clientWidth || 400) - 60;
+                const maxTop = (oceanArea.clientHeight || 240) - 60;
+                div.style.left = Math.random() * maxLeft + 'px';
+                div.style.top = Math.random() * maxTop + 'px';
+                div.dataset.dx = (Math.random() - 0.5) * speedBase;
+                div.dataset.dy = (Math.random() - 0.5) * speedBase;
+                div.addEventListener('click', () => handleClick(div, item));
+                oceanArea.appendChild(div);
+            });
+        }
+
+        function handleClick(div, item) {
+            if (!active || div.dataset.clicked === 'true') return;
+            const k = getKnowledge('ocean');
+            if (item.type === 'trash') {
+                div.dataset.clicked = 'true';
+                div.style.opacity = '0.3';
+                div.classList.add('pop');
+                score = Math.min(30, score + 5);
+                scoreSpan.innerText = score;
+                trashRemaining--;
+                AudioSystem.splash();
+                const rect = div.getBoundingClientRect();
+                spawnParticles(rect.left + 30, rect.top + 30, ['💧', '✨'], 5);
+                if (!state.knowledge.some(x => x.title === k.title)) state.knowledge.push(k);
+                saveState();
+                showResultModal({
+                    emoji: '🥤', title: '拾取垃圾 +5',
+                    score: `得分 ${score} · 剩余垃圾 ${trashRemaining}`,
+                    knowledge: k.content,
+                    buttons: [{ text: '继续', primary: true }]
+                });
+                if (trashRemaining <= 0) passLevel();
+            } else {
+                if (trashRemaining <= 0) return;
+                div.dataset.clicked = 'true';
+                div.style.opacity = '0.3';
+                score = Math.max(0, score - 5);
+                scoreSpan.innerText = score;
+                AudioSystem.error();
+                if (!state.knowledge.some(x => x.title === k.title)) state.knowledge.push(k);
+                saveState();
+                showResultModal({
+                    emoji: '🐟', title: '误伤海洋生物 -5',
+                    score: `当前得分 ${score}`,
+                    knowledge: k.content,
+                    buttons: [{ text: '继续', primary: true }]
+                });
+            }
+        }
+
+        function passLevel() {
+            if (timer) clearInterval(timer);
+            if (moveTimer) clearInterval(moveTimer);
+            active = false;
+            score = Math.min(30, score + LEVEL_SCORE);
+            scoreSpan.innerText = score;
+            AudioSystem.reward();
+
+            if (currentLevel >= MAX_LEVEL) {
+                finishGame(true);
+                return;
+            }
+            showResultModal({
+                emoji: '🎉', title: `第 ${currentLevel} 关通过！`,
+                score: `+${LEVEL_SCORE}分 · 当前 ${score} 分`,
+                knowledge: '海洋垃圾会危害海洋生物，减少塑料使用人人有责。',
+                buttons: [{
+                    text: '进入下一关',
+                    primary: true,
+                    onClick: () => {
+                        currentLevel++;
+                        levelSpan.innerText = currentLevel;
+                        startLevel();
+                    }
+                }]
+            });
+        }
+
+        function startLevel() {
+            active = true;
+            timeLeft = 20;
+            timeSpan.innerText = timeLeft;
+            generateItems();
+            if (timer) clearInterval(timer);
+            if (moveTimer) clearInterval(moveTimer);
+            moveTimer = setInterval(moveItems, 50);
+            timer = setInterval(() => {
+                timeLeft--;
+                timeSpan.innerText = timeLeft;
+                if (timeLeft <= 0) finishGame(false);
+            }, 1000);
+        }
+
+        function moveItems() {
+            const areaW = oceanArea.clientWidth || 400;
+            const areaH = oceanArea.clientHeight || 240;
+            const items = oceanArea.querySelectorAll('.ocean-item');
+            items.forEach(div => {
+                if (div.dataset.clicked === 'true') return;
+                let left = parseFloat(div.style.left) || 0;
+                let top = parseFloat(div.style.top) || 0;
+                let dx = parseFloat(div.dataset.dx) || 0;
+                let dy = parseFloat(div.dataset.dy) || 0;
+                left += dx;
+                top += dy;
+                if (left <= 0 || left >= areaW - 56) { dx = -dx; div.dataset.dx = dx; }
+                if (top <= 0 || top >= areaH - 56) { dy = -dy; div.dataset.dy = dy; }
+                left = Math.max(0, Math.min(areaW - 56, left));
+                top = Math.max(0, Math.min(areaH - 56, top));
+                div.style.left = left + 'px';
+                div.style.top = top + 'px';
+            });
+        }
+
+        function finishGame(success) {
+            if (timer) clearInterval(timer);
+            if (moveTimer) clearInterval(moveTimer);
+            active = false;
+            const finalScore = Math.min(30, score);
+            state.coins += finalScore;
+            AudioSystem.reward();
+            pulseResource('coinResource');
+            saveState();
+            updateUI();
+            showResultModal({
+                emoji: '🌊',
+                title: success ? '🎉 三关全部通过！' : '时间到！',
+                score: `获得 ⭐${finalScore} 积分`,
+                knowledge: '每年有800万吨塑料流入海洋，减少塑料使用刻不容缓。',
+                buttons: [
+                    { text: '再来一次', primary: true, onClick: () => { cleanupGame(); startMiniGame('ocean'); } },
+                    { text: '返回', onClick: () => { cleanupGame(); showScreen('screenMiniSelect'); } }
+                ]
+            });
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+        }
+
+        function startGame() {
+            if (active) return;
+            score = 0;
+            currentLevel = 1;
+            scoreSpan.innerText = '0';
+            levelSpan.innerText = '1';
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+            startLevel();
+        }
+
+        startBtn.addEventListener('click', startGame);
+        helpBtn.addEventListener('click', showOceanHelp);
+        setTimeout(showOceanHelp, 200);
+
+        currentGameCleanup = () => {
+            active = false;
+            if (timer) clearInterval(timer);
+            if (moveTimer) clearInterval(moveTimer);
+            startBtn.removeEventListener('click', startGame);
+            helpBtn.removeEventListener('click', showOceanHelp);
+        };
+    }
+
+    // ----- 小游戏3: 节水守护 -----
+    function startWaterGame(container) {
+        container.innerHTML = `
+            <div class="game-score">关闭水龙头: <span id="waterScore">0</span> / 30积分</div>
+            <div class="game-timer">💧 漏水: <span id="leakCount">0</span> / 5</div>
+            <div class="faucet-grid" id="faucetGrid"></div>
+            <div class="game-controls">
+                <button class="game-btn help" id="waterHelpBtn">❓ 玩法说明</button>
+                <button class="game-btn" id="waterStartBtn">开始守护</button>
+            </div>
+        `;
+        const grid = document.getElementById('faucetGrid');
+        const scoreSpan = document.getElementById('waterScore');
+        const leakSpan = document.getElementById('leakCount');
+        const startBtn = document.getElementById('waterStartBtn');
+        const helpBtn = document.getElementById('waterHelpBtn');
+        let score = 0;
+        let leaks = 0;
+        let active = false;
+        let spawnInterval = null;
+        let endTimeout = null;
+        const holes = [];
+        const HOLE_COUNT = 10;
+        const MAX_SCORE = 30;
+
+        for (let i = 0; i < HOLE_COUNT; i++) {
+            const hole = document.createElement('div');
+            hole.className = 'faucet-hole';
+            hole.dataset.state = 'idle';
+            hole.innerText = '🚰';
+            hole.dataset.index = i;
+            hole.addEventListener('click', () => onHoleClick(hole));
+            grid.appendChild(hole);
+            holes.push(hole);
+        }
+
+        function showWaterHelp() {
+            showResultModal({
+                emoji: '🚰',
+                title: '节水守护 · 玩法说明',
+                tutorial: `
+                    <strong>🎯 目标：</strong>像打地鼠一样，快速点击正在漏水的水龙头！<br><br>
+                    <strong>🕹️ 玩法：</strong>
+                    <ul>
+                        <li>画面中有 <strong>10 个水龙头</strong></li>
+                        <li>水龙头会<strong>随机变红并开始漏水</strong></li>
+                        <li>在漏水蔓延前<strong>点击它</strong>即可关闭</li>
+                        <li>关闭一个漏水水龙头 <strong>+5分</strong></li>
+                        <li>漏水超时未关，<strong>漏水+1</strong>，达到5次失败</li>
+                        <li>积分达到 <strong>30分</strong>，立即获胜结算！</li>
+                    </ul>
+                `,
+                buttons: [{ text: '开始游戏', primary: true }]
+            });
+        }
+
+        function onHoleClick(hole) {
+            if (!active) return;
+            if (hole.dataset.state !== 'leaking') return;
+            hole.dataset.state = 'closed';
+            hole.classList.remove('active-leak');
+            hole.classList.add('closed');
+            hole.innerText = '✅';
+            score = Math.min(MAX_SCORE, score + 5);
+            scoreSpan.innerText = score;
+            AudioSystem.splash();
+            const rect = hole.getBoundingClientRect();
+            spawnParticles(rect.left + 30, rect.top + 30, ['💧', '✨', '💙'], 6);
+            const k = getKnowledge('water');
+            if (!state.knowledge.some(x => x.title === k.title)) state.knowledge.push(k);
+            saveState();
+            showResultModal({
+                emoji: '✅', title: '关闭水龙头 +5',
+                score: `当前得分 ${score} / 30`,
+                knowledge: k.content,
+                buttons: [{ text: '继续', primary: true }]
+            });
+            setTimeout(() => {
+                if (hole.dataset.state === 'closed') {
+                    hole.dataset.state = 'idle';
+                    hole.classList.remove('closed');
+                    hole.innerText = '🚰';
+                }
+            }, 1200);
+            if (score >= MAX_SCORE) endGame(false);
+        }
+
+        function startLeak() {
+            if (!active) return;
+            const idleHoles = holes.filter(h => h.dataset.state === 'idle');
+            if (idleHoles.length === 0) return;
+            const hole = idleHoles[Math.floor(Math.random() * idleHoles.length)];
+            hole.dataset.state = 'leaking';
+            hole.classList.add('active-leak');
+            hole.innerText = '🚰💧';
+            const leakTimeout = setTimeout(() => {
+                if (hole.dataset.state === 'leaking') {
+                    hole.dataset.state = 'idle';
+                    hole.classList.remove('active-leak');
+                    hole.innerText = '🚰';
+                    leaks++;
+                    leakSpan.innerText = leaks;
+                    AudioSystem.error();
+                    if (leaks >= 5) endGame(true);
+                }
+            }, 2000);
+            hole.dataset.leakTimeout = leakTimeout;
+        }
+
+        function startGame() {
+            if (active) return;
+            active = true;
+            score = 0;
+            leaks = 0;
+            scoreSpan.innerText = '0';
+            leakSpan.innerText = '0';
+            holes.forEach(h => {
+                h.dataset.state = 'idle';
+                h.classList.remove('active-leak', 'closed');
+                h.innerText = '🚰';
+                if (h.dataset.leakTimeout) clearTimeout(h.dataset.leakTimeout);
+            });
+            startBtn.disabled = true;
+            startBtn.style.opacity = '0.5';
+            if (spawnInterval) clearInterval(spawnInterval);
+            if (endTimeout) clearTimeout(endTimeout);
+            spawnInterval = setInterval(() => { if (active) startLeak(); }, 800);
+            endTimeout = setTimeout(() => { if (active) endGame(false); }, 40000);
+        }
+
+        function endGame(isFail) {
+            if (!active) return;
+            active = false;
+            if (spawnInterval) clearInterval(spawnInterval);
+            if (endTimeout) clearTimeout(endTimeout);
+            holes.forEach(h => {
+                if (h.dataset.leakTimeout) clearTimeout(h.dataset.leakTimeout);
+                h.dataset.state = 'idle';
+                h.classList.remove('active-leak', 'closed');
+                h.innerText = '🚰';
+            });
+            let finalScore = score;
+            if (isFail) finalScore = Math.floor(score / 2);
+            state.coins += finalScore;
+            AudioSystem.reward();
+            pulseResource('coinResource');
+            saveState();
+            updateUI();
+            showResultModal({
+                emoji: '💧',
+                title: isFail ? '漏水太多啦！' : '节水守护成功！',
+                score: `获得 ⭐${finalScore} 积分`,
+                knowledge: '一个滴水的水龙头一天浪费十几升水，及时关紧水龙头。',
+                buttons: [
+                    { text: '再来一局', primary: true, onClick: () => { cleanupGame(); startMiniGame('water'); } },
+                    { text: '返回', onClick: () => { cleanupGame(); showScreen('screenMiniSelect'); } }
+                ]
+            });
+            startBtn.disabled = false;
+            startBtn.style.opacity = '1';
+        }
+
+        startBtn.addEventListener('click', startGame);
+        helpBtn.addEventListener('click', showWaterHelp);
+        setTimeout(showWaterHelp, 200);
+
+        currentGameCleanup = () => {
+            active = false;
+            if (spawnInterval) clearInterval(spawnInterval);
+            if (endTimeout) clearTimeout(endTimeout);
+            holes.forEach(h => { if (h.dataset.leakTimeout) clearTimeout(h.dataset.leakTimeout); });
+            startBtn.removeEventListener('click', startGame);
+            helpBtn.removeEventListener('click', showWaterHelp);
+        };
+    }
+
+    function cleanupGame() {
+        if (currentGameCleanup) {
+            currentGameCleanup();
+            currentGameCleanup = null;
+        }
+    }
+
+    // ==================== 事件绑定 ====================
+    document.getElementById('btnMiniGames').addEventListener('click', () => { AudioSystem.click(); showScreen('screenMiniSelect'); });
+    document.getElementById('btnShop').addEventListener('click', () => { AudioSystem.click(); showScreen('screenShop'); });
+    document.getElementById('btnEggShop').addEventListener('click', () => { AudioSystem.click(); showScreen('screenEggShop'); });
+    document.getElementById('btnKnowledge').addEventListener('click', () => { AudioSystem.click(); showScreen('screenKnowledge'); });
+    document.getElementById('btnGlobalHelp').addEventListener('click', () => { AudioSystem.click(); showGlobalHelp(); });
+
+    document.getElementById('btnSound').addEventListener('click', (e) => {
+        const enabled = AudioSystem.toggle();
+        e.currentTarget.innerText = enabled ? '🔊' : '🔇';
+        e.currentTarget.classList.toggle('muted', !enabled);
+        if (enabled) AudioSystem.click();
+    });
+
+    document.getElementById('btnMusic').addEventListener('click', (e) => {
+        const style = AudioSystem.switchStyle();
+        e.currentTarget.innerText = style === 0 ? '🎵' : '🎶';
+        AudioSystem.click();
+        showResultModal({
+            emoji: '🎵',
+            title: '音乐已切换',
+            score: style === 0 ? '轻快模式 🎵' : '激情模式 🎶',
+            knowledge: '两种背景音乐可以随时切换，选择你喜欢的节奏吧！',
+            buttons: [{ text: '好的', primary: true }]
+        });
+    });
+
+    // 新建存档按钮：清空当前存档，重新开始
+    document.getElementById('btnReset').addEventListener('click', () => {
+        AudioSystem.click();
+        showResultModal({
+            emoji: '🔄',
+            title: '确定要新建存档吗？',
+            score: '当前所有进度都会被清空！',
+            knowledge: '此操作不可撤销，请谨慎选择。',
+            buttons: [
+                { text: '取消', primary: false },
+                { text: '确定清空', primary: true, onClick: () => {
+                    // 清空当前存档
+                    localStorage.removeItem(SAVE_KEY);
+                    localStorage.removeItem(SAVE_KEY + '_welcomed');
+                    // 刷新页面
+                    window.location.reload();
+                }}
+            ]
+        });
+    });
+
+    document.getElementById('backFromMiniSelect').addEventListener('click', () => { AudioSystem.click(); cleanupGame(); showScreen('screenHome'); });
+    document.getElementById('backFromShop').addEventListener('click', () => { AudioSystem.click(); showScreen('screenHome'); });
+    document.getElementById('backFromEggShop').addEventListener('click', () => { AudioSystem.click(); showScreen('screenHome'); });
+    document.getElementById('backFromKnowledge').addEventListener('click', () => { AudioSystem.click(); showScreen('screenHome'); });
+    document.getElementById('backFromGamePlay').addEventListener('click', () => {
+        AudioSystem.click();
+        if (currentGameCleanup) {
+            showResultModal({
+                emoji: '⚠️', title: '确定退出游戏吗？', score: '当前进度会丢失',
+                buttons: [
+                    { text: '继续游戏', primary: true },
+                    { text: '退出', onClick: () => { cleanupGame(); showScreen('screenMiniSelect'); } }
+                ]
+            });
+        } else {
+            showScreen('screenMiniSelect');
+        }
+    });
+
+    // 自动保存：每3秒保存一次
+    setInterval(() => { saveState(); }, 3000);
+    // 关闭页面前保存
+    window.addEventListener('beforeunload', saveState);
+    // 页面隐藏时保存（移动端）
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) saveState();
+    });
+    // 状态衰减
+    setInterval(decayStats, 5000);
+
+    updateUI();
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            AudioSystem.init();
+            AudioSystem.startBGM();
+        }, 500);
+        // 只在首次打开时显示欢迎帮助
+        if (!state.welcomed) {
+            state.welcomed = true;
+            saveState();
+            showGlobalHelp();
+        }
+    });
+
+    document.body.addEventListener('click', () => {
+        AudioSystem.init();
+        if (AudioSystem.enabled && AudioSystem.ctx && AudioSystem.ctx.state === 'suspended') {
+            AudioSystem.ctx.resume();
+        }
+    }, { once: false });
+
+    showScreen('screenHome');
+</script>
+</body>
+</html>
